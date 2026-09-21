@@ -238,7 +238,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 }
 .story-card.is-big { width: clamp(230px, 32vw, 380px); }
 .story-card.is-active { opacity: 1; }
-.story-card-media { width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: #232019; }
+.story-card-media { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; background: #232019; }
 .story-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .story-card figcaption { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .story-card-year { font-family: var(--serif); font-size: clamp(1.2rem, 2.8vw, 1.7rem); font-variant-numeric: tabular-nums; }
@@ -291,6 +291,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 }
 .family-profile { text-align: center; }
 .family-photo {
+  position: relative;
   width: min(240px, 64%); aspect-ratio: 3 / 4; margin: 0 auto;
   overflow: hidden; background: #E9E5DC;
 }

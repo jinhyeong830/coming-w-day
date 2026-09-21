@@ -50,7 +50,12 @@ export default function Gallery() {
               onClick={() => setLightboxIndex(i)}
             >
               <span className="g-ph">
-                <FallbackImage src={img.src} fallbackSrc={galleryFallback(i)} alt={img.alt} loading="lazy" />
+                <FallbackImage
+                  src={img.src}
+                  fallbackSrc={galleryFallback(i)}
+                  alt={img.alt}
+                  sizes="(min-width: 1280px) 33vw, (min-width: 768px) 40vw, 90vw"
+                />
               </span>
               <span className="g-cap">{String(i + 1).padStart(2, "0")}</span>
             </button>
@@ -126,6 +131,8 @@ function GalleryLightbox({
           src={img.src}
           fallbackSrc={galleryFallback(index)}
           alt={img.alt}
+          sizes="(min-width: 640px) 560px, 92vw"
+          priority
         />
         <span className="lightbox-cap">Photograph {String(index + 1).padStart(2, "0")}</span>
       </div>

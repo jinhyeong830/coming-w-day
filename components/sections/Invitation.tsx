@@ -33,7 +33,7 @@ export default function Invitation() {
                     src={p.parentPhoto}
                     fallbackSrc={fallbackSrc}
                     alt={`${p.role} ${p.name}의 가족 사진`}
-                    loading="lazy"
+                    sizes="(min-width: 768px) 240px, 64vw"
                   />
                 </div>
                 <p className="family-lineage">{p.lineage}</p>

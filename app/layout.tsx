@@ -1,9 +1,24 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const siteTitle = "SANGWOO & JINHYEONG — Wedding";
+const siteDescription = "상우 & 진형의 결혼식에 초대합니다.";
+
 export const metadata: Metadata = {
-  title: "SANGWOO & JINHYEONG — Wedding",
-  description: "상우 & 진형의 결혼식에 초대합니다.",
+  title: siteTitle,
+  description: siteDescription,
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    type: "website",
+    locale: "ko_KR",
+    // og:image는 app/opengraph-image.tsx에서 자동 생성되어 별도 지정 없이도 포함된다.
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+  },
 };
 
 export const viewport: Viewport = {

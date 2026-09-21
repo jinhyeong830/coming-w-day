@@ -123,7 +123,7 @@ export default function Story() {
                         src={item.image}
                         fallbackSrc={fallbackSrc}
                         alt={item.alt || item.title}
-                        loading="lazy"
+                        sizes="(min-width: 1024px) 380px, 32vw"
                       />
                     </span>
                     <figcaption>
