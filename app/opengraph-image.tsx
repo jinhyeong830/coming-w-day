@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { weddingInfo } from "@/data/wedding";
 
-export const runtime = "edge";
+// 내용이 고정(static)이라 edge runtime 없이도 build 시 정적으로 생성된다.
 export const alt = "SANGWOO & JINHYEONG Wedding";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

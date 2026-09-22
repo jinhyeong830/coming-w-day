@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import Reveal from "@/components/ui/Reveal";
 import FallbackImage from "@/components/ui/FallbackImage";
 import { placeholderImage } from "@/lib/placeholder";
+import { lockBodyScroll, unlockBodyScroll } from "@/lib/scrollLock";
 import { galleryImages, GALLERY_LAYOUT, GALLERY_PREVIEW_COUNT } from "@/data/gallery";
+
+// 스와이프 제스처 판정 기준(px). 짧은 탭이나 단순 클릭은 이 값을 넘지 않아 무시된다.
+const SWIPE_THRESHOLD_X = 50; // 좌우 — 사진 전환
+const SWIPE_THRESHOLD_Y_CLOSE = 90; // 아래로 — lightbox 닫기 (전환보다 더 확실한 제스처를 요구)
 
 // 실제 파일이 아직 없는 슬롯(404)은 자동으로 이 placeholder로 대체된다.
 function galleryFallback(index: number): string {
@@ -94,17 +99,39 @@ function GalleryLightbox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose]);
 
-  let touchStartX: number | null = null;
+  // lightbox가 열려 있는 동안 배경 페이지가 스크롤되지 않도록 한다 — 이게 없으면
+  // 모바일에서 스와이프 제스처가 배경 스크롤과 경합해 사진 전환/닫기가 씹히는 원인이 된다.
+  useEffect(() => {
+    lockBodyScroll();
+    return () => unlockBodyScroll();
+  }, []);
+
+  // touchstart/touchend만으로 좌우(사진 전환)와 아래 방향(닫기)을 구분한다.
+  // - 가로 이동이 더 크면(horizontal dominant) 좌우 스와이프로 판단
+  // - 세로 이동이 더 크고 아래 방향이며 threshold 이상이면 닫기
+  // - 둘 다 threshold 미만이면(짧은 탭/클릭) 아무 동작 없음
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
   function handleTouchStart(e: React.TouchEvent) {
-    touchStartX = e.touches[0].clientX;
+    const t = e.touches[0];
+    touchStartRef.current = { x: t.clientX, y: t.clientY };
   }
   function handleTouchEnd(e: React.TouchEvent) {
-    if (touchStartX === null) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 40) {
-      dx < 0 ? nextImage() : prevImage();
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (Math.abs(dx) > SWIPE_THRESHOLD_X) {
+        dx < 0 ? nextImage() : prevImage();
+      }
+    } else if (dy > SWIPE_THRESHOLD_Y_CLOSE) {
+      onClose();
     }
-    touchStartX = null;
   }
 
   const img = galleryImages[index];
