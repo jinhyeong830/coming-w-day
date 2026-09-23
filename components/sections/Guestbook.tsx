@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import Reveal from "@/components/ui/Reveal";
 import { showToast } from "@/lib/toast";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+import { formatDateKST } from "@/lib/date";
 import { GUESTBOOK_PAGE_SIZE, type GuestbookMessage } from "@/data/guestbook";
 
 function IconEdit() {
@@ -27,11 +28,11 @@ type PendingAction = { gindex: number; action: "edit" | "delete" } | null;
 /**
  * GUESTBOOK — Supabase(guestbook 테이블)와 연동된 목록 + 페이지네이션(5개 초과 시 노출).
  *
- * - 조회(SELECT)와 작성(INSERT)만 실제 DB에 연결되어 있다.
- * - 수정/삭제는 이번 단계에서 UPDATE/DELETE를 공개 RLS로 열지 않기로 했기 때문에
- *   실제 DB에는 반영되지 않는다. 대신 방금 작성한 글에 한해 같은 세션 안에서만
- *   로컬로 수정/삭제해볼 수 있는 기존 UX를 그대로 유지한다(비밀번호는 서버로 전송되지 않음).
- *   DB에서 불러온 기존 글은 password가 없어 비밀번호 확인이 항상 실패한다 — 의도된 동작.
+ * - 조회(SELECT)는 클라이언트에서 anon key로 직접 조회한다(password_hash는 select하지 않음).
+ * - 작성(Create)과 삭제(Delete)는 app/api/guestbook(서버)로 요청한다 — 비밀번호 hash 생성/검증은
+ *   항상 서버에서만 일어나고, 클라이언트는 원본 비밀번호를 보낼 뿐 hash 자체를 다루지 않는다.
+ * - 수정(Edit)은 실제 DB에 반영되는 기능이 아직 없어 이번에도 추가하지 않았다 — 같은 세션에서
+ *   방금 작성한 글에 한해 로컬로만 수정해볼 수 있는 기존 UX를 그대로 유지한다(새로고침 시 초기화).
  */
 export default function Guestbook() {
   const [messages, setMessages] = useState<GuestbookMessage[]>([]);
@@ -76,6 +77,7 @@ export default function Guestbook() {
           id: row.id as string,
           name: row.name as string,
           msg: row.message as string,
+          createdAt: row.created_at as string,
         }))
       );
       setLoading(false);
@@ -107,25 +109,50 @@ export default function Guestbook() {
     requestAnimationFrame(() => authInputRef.current?.focus());
   }
 
-  function confirmAuth() {
+  async function confirmAuth() {
     if (!pending) return;
     const message = messages[pending.gindex];
-    if (authValue.trim() !== message.password) {
+    const password = authValue.trim();
+
+    if (pending.action === "delete") {
+      // 삭제는 로컬 값과 비교하지 않고, 매번 서버에서 password_hash로 실제 검증한다.
+      if (!/^\d{4}$/.test(password)) {
+        showToast("비밀번호는 숫자 4자리로 입력해주세요.");
+        return;
+      }
+      if (!message.id) {
+        showToast("삭제할 수 없는 메시지입니다.");
+        return;
+      }
+      const res = await fetch("/api/guestbook", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: message.id, password }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        showToast(body?.error ?? "삭제에 실패했습니다.");
+        setAuthValue("");
+        authInputRef.current?.focus();
+        return;
+      }
+      setMessages((prev) => prev.filter((_, i) => i !== pending.gindex));
+      showToast("메시지가 삭제되었습니다.");
+      resetAuth();
+      return;
+    }
+
+    // 수정(Edit)은 기존과 동일하게 같은 세션에서 작성한 글의 로컬 password로만 게이트한다.
+    if (password !== message.password) {
       showToast("비밀번호가 일치하지 않습니다.");
       setAuthValue("");
       authInputRef.current?.focus();
       return;
     }
-    if (pending.action === "delete") {
-      setMessages((prev) => prev.filter((_, i) => i !== pending.gindex));
-      showToast("메시지가 삭제되었습니다.");
-      resetAuth();
-    } else {
-      setEditingIndex(pending.gindex);
-      setEditName(message.name);
-      setEditMsg(message.msg);
-      resetAuth();
-    }
+    setEditingIndex(pending.gindex);
+    setEditName(message.name);
+    setEditMsg(message.msg);
+    resetAuth();
   }
 
   function saveEdit(gindex: number) {
@@ -149,26 +176,27 @@ export default function Guestbook() {
       showToast("비밀번호는 숫자 4자리로 입력해주세요.");
       return;
     }
-    if (!isSupabaseConfigured) {
-      showToast("방명록 설정이 완료되지 않았습니다. 잠시 후 다시 시도해주세요.");
-      return;
-    }
-
     setSubmitting(true);
-    // message 컬럼만 DB에 저장한다 — password는 요구사항상 저장하지 않는 값이라 보내지 않는다.
-    const { data, error } = await supabase
-      .from("guestbook")
-      .insert({ name, message: msg })
-      .select("id, name, message, created_at")
-      .single();
+    // 비밀번호 hash 생성은 서버(app/api/guestbook)에서만 일어난다 — 클라이언트는
+    // 원본 비밀번호를 보낼 뿐, hash된 값을 만들거나 다루지 않는다.
+    const res = await fetch("/api/guestbook", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, message: msg, password }),
+    });
     setSubmitting(false);
 
-    if (error || !data) {
-      showToast("등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      showToast(body?.error ?? "등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
+    const { data } = await res.json();
 
-    setMessages((prev) => [{ id: data.id as string, name: data.name as string, msg: data.message as string, password }, ...prev]);
+    setMessages((prev) => [
+      { id: data.id as string, name: data.name as string, msg: data.message as string, createdAt: data.created_at as string, password },
+      ...prev,
+    ]);
     setPage(1);
     setJustAddedFirst(true);
     requestAnimationFrame(() => {
@@ -236,7 +264,10 @@ export default function Guestbook() {
             return (
               <li key={gindex} className={enterAnim ? "gb-enter" : undefined}>
                 <div className="gb-head">
-                  <p className="gb-name">{m.name}</p>
+                  <div className="gb-title">
+                    <p className="gb-name">{m.name}</p>
+                    {m.createdAt && <p className="gb-date">{formatDateKST(m.createdAt)}</p>}
+                  </div>
                   <div className="gb-actions">
                     <button
                       type="button"
