@@ -11,6 +11,18 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const isSupabaseServerConfigured = Boolean(supabaseUrl && serviceRoleKey);
 
+if (!isSupabaseServerConfigured) {
+  // 값은 절대 출력하지 않고, 어떤 변수 "이름"이 비어있는지만 서버 콘솔에 남긴다.
+  const missing = [
+    !supabaseUrl && "NEXT_PUBLIC_SUPABASE_URL",
+    !serviceRoleKey && "SUPABASE_SERVICE_ROLE_KEY",
+  ].filter(Boolean);
+  console.error(
+    `[supabaseServer] 다음 환경변수가 설정되어 있지 않습니다: ${missing.join(", ")} — ` +
+      `이 값이 없으면 /api/guestbook의 POST/DELETE는 Supabase를 호출하기 전에 500을 반환합니다.`
+  );
+}
+
 export const supabaseServer = createClient(
   supabaseUrl || "https://placeholder.supabase.co",
   serviceRoleKey || "placeholder-service-role-key",
