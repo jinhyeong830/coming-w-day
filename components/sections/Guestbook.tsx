@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import Reveal from "@/components/ui/Reveal";
 import { showToast } from "@/lib/toast";
-import { guestbookSeed, GUESTBOOK_PAGE_SIZE, type GuestbookMessage } from "@/data/guestbook";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+import { GUESTBOOK_PAGE_SIZE, type GuestbookMessage } from "@/data/guestbook";
 
 function IconEdit() {
   return (
@@ -24,16 +25,18 @@ function IconDelete() {
 type PendingAction = { gindex: number; action: "edit" | "delete" } | null;
 
 /**
- * GUESTBOOK — 데이터 기반 목록 + 페이지네이션(5개 초과 시 노출) + 비밀번호 기반 수정/삭제(UD).
+ * GUESTBOOK — Supabase(guestbook 테이블)와 연동된 목록 + 페이지네이션(5개 초과 시 노출).
  *
- * 주의: 이 mockup은 backend가 없으므로 비밀번호를 배열에 평문으로 들고 있다가
- * 클라이언트에서 그대로 비교한다. 실제 서비스로 연결할 때는:
- *   - 비밀번호를 서버로 전송해 해시(bcrypt 등) 비교하고,
- *   - 목록 조회 응답에는 비밀번호 필드를 절대 포함하지 않아야 한다.
- * 향후 Supabase를 연결할 때는 messages state를 API 호출(fetch/mutate)로 교체한다.
+ * - 조회(SELECT)와 작성(INSERT)만 실제 DB에 연결되어 있다.
+ * - 수정/삭제는 이번 단계에서 UPDATE/DELETE를 공개 RLS로 열지 않기로 했기 때문에
+ *   실제 DB에는 반영되지 않는다. 대신 방금 작성한 글에 한해 같은 세션 안에서만
+ *   로컬로 수정/삭제해볼 수 있는 기존 UX를 그대로 유지한다(비밀번호는 서버로 전송되지 않음).
+ *   DB에서 불러온 기존 글은 password가 없어 비밀번호 확인이 항상 실패한다 — 의도된 동작.
  */
 export default function Guestbook() {
-  const [messages, setMessages] = useState<GuestbookMessage[]>(guestbookSeed);
+  const [messages, setMessages] = useState<GuestbookMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [page, setPage] = useState(1);
   const [justAddedFirst, setJustAddedFirst] = useState(false);
   const [pending, setPending] = useState<PendingAction>(null);
@@ -46,6 +49,43 @@ export default function Guestbook() {
   const msgRef = useRef<HTMLTextAreaElement>(null);
   const pwRef = useRef<HTMLInputElement>(null);
   const authInputRef = useRef<HTMLInputElement>(null);
+
+  // 최초 진입 시 방명록을 최신순으로 조회한다. 새로고침해도 항상 이 조회가 다시 실행되므로
+  // 등록된 글이 그대로 유지된다.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMessages() {
+      if (!isSupabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase
+        .from("guestbook")
+        .select("id, name, message, created_at")
+        .order("created_at", { ascending: false });
+
+      if (cancelled) return;
+      if (error) {
+        showToast("방명록을 불러오지 못했습니다.");
+        setLoading(false);
+        return;
+      }
+      setMessages(
+        (data ?? []).map((row) => ({
+          id: row.id as string,
+          name: row.name as string,
+          msg: row.message as string,
+        }))
+      );
+      setLoading(false);
+    }
+
+    loadMessages();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const totalPages = Math.max(1, Math.ceil(messages.length / GUESTBOOK_PAGE_SIZE));
   const currentPage = Math.min(Math.max(page, 1), totalPages);
@@ -97,8 +137,10 @@ export default function Guestbook() {
     setEditingIndex(null);
   }
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (submitting) return; // 중복 submit 방지
+
     const name = nameRef.current?.value.trim() ?? "";
     const msg = msgRef.current?.value.trim() ?? "";
     const password = pwRef.current?.value.trim() ?? "";
@@ -107,7 +149,26 @@ export default function Guestbook() {
       showToast("비밀번호는 숫자 4자리로 입력해주세요.");
       return;
     }
-    setMessages((prev) => [{ name, msg, password }, ...prev]);
+    if (!isSupabaseConfigured) {
+      showToast("방명록 설정이 완료되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    setSubmitting(true);
+    // message 컬럼만 DB에 저장한다 — password는 요구사항상 저장하지 않는 값이라 보내지 않는다.
+    const { data, error } = await supabase
+      .from("guestbook")
+      .insert({ name, message: msg })
+      .select("id, name, message, created_at")
+      .single();
+    setSubmitting(false);
+
+    if (error || !data) {
+      showToast("등록에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    setMessages((prev) => [{ id: data.id as string, name: data.name as string, msg: data.message as string, password }, ...prev]);
     setPage(1);
     setJustAddedFirst(true);
     requestAnimationFrame(() => {
@@ -157,13 +218,18 @@ export default function Guestbook() {
               ref={pwRef}
             />
           </div>
-          <button type="submit" className="btn btn-primary">
-            남기기
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {submitting ? "등록 중..." : "남기기"}
           </button>
         </Reveal>
 
         <Reveal as="ul" className="guestbook-list" id="guestbookList">
-          {pageItems.map(({ m, gindex }, i) => {
+          {loading && <li className="gb-empty">방명록을 불러오는 중입니다...</li>}
+          {!loading && messages.length === 0 && (
+            <li className="gb-empty">아직 작성된 방명록이 없습니다. 첫 메시지를 남겨주세요!</li>
+          )}
+          {!loading &&
+            pageItems.map(({ m, gindex }, i) => {
             const isAuthOpen = pending?.gindex === gindex;
             const isEditing = editingIndex === gindex;
             const enterAnim = justAddedFirst && i === 0 && currentPage === 1;

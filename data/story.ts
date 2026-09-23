@@ -9,6 +9,13 @@ export interface StoryItem {
    * 대소문자는 실제 파일명과 정확히 일치해야 한다(배포 환경은 대소문자를 구분한다).
    */
   image: string;
+  /**
+   * image가 .webm일 때 함께 제공할 MP4 fallback 경로(선택). WebM 디코딩을 지원하지 않는
+   * 구형/일부 모바일 브라우저·인앱 브라우저를 위한 <source type="video/mp4">로 쓰인다.
+   * 현재는 public/images/story/ 아래 MP4 파일이 없어 전부 비워둔 상태다 — 값을 채우면
+   * 코드 수정 없이 자동으로 <source>가 추가된다.
+   */
+  videoMp4?: string;
   lane: "bride" | "groom" | "merge" | "merged";
   /**
    * scroll-driven 타임라인의 가로 좌표 시스템(px, TRACK_W=4300 기준)에서 사용된다.

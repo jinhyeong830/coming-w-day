@@ -19,6 +19,7 @@ export default function Story() {
   const progressFillRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const dotRefs = useRef<(HTMLElement | null)[]>([]);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   // 신부/신랑 라인이 합류하는 지점 — storyItems[2] (2020, lane: "merge")
   const mergeItem = storyItems[2];
@@ -88,6 +89,40 @@ export default function Story() {
     };
   }, []);
 
+  // 모바일 성능 최적화: Story의 video는 preload="none"이라 기본적으로 아무것도 받아오지
+  // 않는다. 실제로 화면에 보이는(=IntersectionObserver 기준 충분히 보이는) video만
+  // play()하고, 벗어나면 pause()한다 — 스크롤 매핑(updateStory)과는 완전히 분리된 별도
+  // 로직이라 기존 scroll interaction에는 영향을 주지 않는다.
+  // (가로 transform으로 카드가 이동해도 IntersectionObserver는 실제 렌더링된 위치 기준으로
+  //  교차를 판정하므로 올바르게 동작한다.)
+  useEffect(() => {
+    const videos = videoRefs.current.filter((v): v is HTMLVideoElement => v !== null);
+    if (videos.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const video = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting) {
+            const playPromise = video.play();
+            // 브라우저 autoplay 정책으로 거부되거나(play() Promise rejection),
+            // 디코딩이 실패해도 콘솔 에러/페이지 크래시로 이어지지 않도록 조용히 무시한다.
+            // (이 경우 video의 poster가 그대로 보여 화면이 깨지지 않는다.)
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {});
+            }
+          } else {
+            video.pause();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    videos.forEach((v) => observer.observe(v));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section id="story" className="section story" data-theme="dark">
       <div className="story-intro">
@@ -122,14 +157,19 @@ export default function Story() {
                     <span className="story-card-media">
                       {isVideo ? (
                         <video
-                          src={item.image}
-                          autoPlay
+                          ref={(el) => {
+                            videoRefs.current[i] = el;
+                          }}
                           muted
                           loop
                           playsInline
-                          preload="metadata"
+                          preload="none"
+                          poster={fallbackSrc}
                           aria-label={item.alt || item.title}
-                        />
+                        >
+                          <source src={item.image} type="video/webm" />
+                          {item.videoMp4 && <source src={item.videoMp4} type="video/mp4" />}
+                        </video>
                       ) : (
                         <FallbackImage
                           src={item.image}

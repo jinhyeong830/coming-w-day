@@ -1,22 +1,18 @@
 export interface GuestbookMessage {
+  /** Supabase guestbook.id. 작성 직후 INSERT 응답으로 채워진다. */
+  id?: string;
   name: string;
   msg: string;
   /**
-   * 데모용 평문 비밀번호. 이 mockup은 backend가 없어 클라이언트 배열에 그대로 들고 있다가 비교한다.
-   * 실제 서비스로 연결할 때는 비밀번호를 서버로 전송해 해시(bcrypt 등) 비교하고,
-   * 목록 조회 응답에는 비밀번호 필드를 절대 포함하지 않아야 한다.
-   * (向후 Supabase 연결 시 components/sections/Guestbook.tsx의 로컬 상태 로직을
-   *  API 호출로 교체한다.)
+   * 방명록 화면에서 "내가 방금 쓴 글"을 같은 세션 안에서 수정/삭제해볼 수 있게 하는
+   * 로컬 전용 값이다. Supabase guestbook 테이블에는 비밀번호 컬럼이 없고, 이 값은
+   * 서버로 전송/저장되지 않는다.
+   *
+   * DB에서 불러온 기존 메시지는 password가 없으므로(undefined) 수정/삭제 시 비밀번호가
+   * 항상 일치하지 않는다 — 이번 단계에서는 UPDATE/DELETE를 공개 RLS로 열지 않기로 했으므로
+   * 의도된 동작이다(같은 세션에서 방금 작성한 글만 로컬로 수정/삭제 가능, 새로고침하면 초기화).
    */
-  password: string;
+  password?: string;
 }
-
-// 데모용 기본 비밀번호. 새로 작성되는 메시지는 작성 시 입력한 4자리로 대체된다.
-export const guestbookSeed: GuestbookMessage[] = [
-  { name: "민지", msg: "두 분의 새로운 시작을 진심으로 축하해요!", password: "0000" },
-  { name: "철수", msg: "결혼 정말 축하해! 오래오래 행복해 :)", password: "0000" },
-  { name: "수진", msg: "두 사람이 함께 걸어갈 모든 계절을 응원할게요.", password: "0000" },
-  { name: "지훈", msg: "항상 지금처럼 서로를 아껴주길 바라요 :)", password: "0000" },
-];
 
 export const GUESTBOOK_PAGE_SIZE = 5;

@@ -73,7 +73,7 @@ export default function Venue() {
                   >
                     <div className="accordion-panel-inner">
                       {item.body.split("\n").map((line, i, arr) => (
-                        <span key={line}>
+                        <span key={`${line+i}`}>
                           {line}
                           {i < arr.length - 1 && <br />}
                         </span>
