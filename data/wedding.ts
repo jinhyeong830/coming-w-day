@@ -11,14 +11,17 @@ export const weddingInfo = {
   /** fullscreen nav 하단 전용 표기 */
   dateLabelNav: "2026. 12. 13",
   dowLabel: "SUN",
-  timeLabel: "12:00 PM",
+  timeLabel: "1:40 PM",
   venueName: "상록아트홀",
-  venueAddress: "서울특별시 강남구 예시로 123, 4층 (placeholder)",
-  venueHall: "그랜드홀",
+  venueAddress: "서울특별시 강남구 언주로 508 상록회관 지하 1층",
+  venueHall: "그랜드볼룸 홀",
 };
 
 export const venueInfo = {
-  transit: "지하철 2호선 · 신○역 3번 출구 도보 5분\n버스 간선 000, 지선 0000 · 상록아트홀 정류장 하차",
-  parking: "건물 지하 1~3층 주차장 이용 가능 (2시간 무료)\n발렛 파킹 서비스 운영",
-  shuttle: "○○역 1번 출구 앞, 11:00 ~ 12:00 · 10분 간격 운행",
+  transit: `지하철 2호선/수인부당선 · 선릉역 8번 출구 도보 10분\n
+  버스 간선 · KT 강남지사 하차 - 141, 242, 361\n
+  버스 지선 0000 · 상록아트홀 정류장 하차`,
+  parking: `자가용 이용시 '상록아트홀' 또는 '서울시 강남구 언주로 508' 입력\n
+  건물 지하 주차장 이용 가능 (90분 무료)\n`,
+  shuttle: "선릉역 5번 출구 앞에서 승차 · 수시 운행",
 };

@@ -16,7 +16,7 @@ export interface FamilyProfile {
 export const invitation: { groom: FamilyProfile; bride: FamilyProfile } = {
   groom: {
     parentPhoto: "/images/parents/groom.jpg",
-    lineage: "아버지 홍○○ · 어머니 김○○의 아들",
+    lineage: "아버지 박무식 · 어머니 박희경의 아들",
     story:
       "어릴 적부터 차분하고 다정한 성격으로 주변을 살필 줄 아는 사람이었습니다. 그 마음은 지금도 변하지 않았습니다.",
     role: "신랑",
@@ -24,7 +24,7 @@ export const invitation: { groom: FamilyProfile; bride: FamilyProfile } = {
   },
   bride: {
     parentPhoto: "/images/parents/bride.jpg",
-    lineage: "아버지 김○○ · 어머니 박○○의 딸",
+    lineage: "아버지 유항선 · 어머니 정경애의 딸",
     story:
       "밝고 씩씩하게 자라 어떤 순간에도 자신만의 속도로 최선을 다하는 사람으로 성장했습니다.",
     role: "신부",

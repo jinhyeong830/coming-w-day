@@ -10,25 +10,10 @@ export interface GalleryImage {
 // 사진 경로 규칙: public/images/gallery/01.jpg ~ 30.jpg
 // 아직 파일이 없는 슬롯도 404 시 자동으로 placeholder가 표시되므로(FallbackImage),
 // 규칙에 맞는 파일만 넣으면 코드 수정 없이 바로 반영된다.
-//
-// 아래 표는 규칙(NN.jpg)을 따르지 않는 원본 파일명을 가진 슬롯만 예외로 지정한 것이다.
-// (파일명 순서대로 비어있던 03, 04, 05, 09~15번 슬롯에 채워 넣었다. 파일 자체는 리네임하지 않았다.)
-const RAW_FILENAME_OVERRIDES: Record<number, string> = {
-  3: "YJ_00016_1.jpg",
-  4: "YJ_00081_1.jpg",
-  5: "YJ_00603_1.jpg",
-  9: "YJ_00897_1.jpg",
-  10: "YJ_01144_1.jpg",
-  11: "YJ_01538_1.jpg",
-  12: "YJ_01644_1.jpg",
-  13: "YJ_01781_1.jpg",
-  14: "YJ_01938_1.jpg",
-  15: "YJ_02026_1.jpg",
-};
+
 
 export const galleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) => {
   const slotNumber = i + 1; // 1-indexed, public/images/gallery의 파일명과 대응
-  // const filename = RAW_FILENAME_OVERRIDES[slotNumber] ?? `${String(slotNumber).padStart(2, "0")}.jpg`;
   const filename =`${String(slotNumber).padStart(2, "0")}.jpg`;
   return {
     src: `/images/gallery/${filename}`,
@@ -58,7 +43,7 @@ export const GALLERY_LAYOUT: GalleryLayoutSlot[] = [
   { type: "g-wide", mobileOrder: 4 },
   { type: "g-portrait", mobileOrder: 8 },
   { type: "g-wide", mobileOrder: 7 },
-  { type: "g-small" }, // 모바일 프리뷰에서는 숨김
+  { type: "g-small", mobileOrder: 9 },
 ];
 
 // 데스크톱 기준 전체 장수(9) — 모바일은 이 중 8장만 보인다.

@@ -109,6 +109,7 @@ export default function Story() {
             <div className="story-cards" id="storyCards">
               {storyItems.map((item, i) => {
                 const fallbackSrc = placeholderImage(i, item.year);
+                const isVideo = item.image.toLowerCase().endsWith(".webm");
                 return (
                   <figure
                     key={item.year}
@@ -119,12 +120,24 @@ export default function Story() {
                     style={{ left: item.x }}
                   >
                     <span className="story-card-media">
-                      <FallbackImage
-                        src={item.image}
-                        fallbackSrc={fallbackSrc}
-                        alt={item.alt || item.title}
-                        sizes="(min-width: 1024px) 380px, 32vw"
-                      />
+                      {isVideo ? (
+                        <video
+                          src={item.image}
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          preload="metadata"
+                          aria-label={item.alt || item.title}
+                        />
+                      ) : (
+                        <FallbackImage
+                          src={item.image}
+                          fallbackSrc={fallbackSrc}
+                          alt={item.alt || item.title}
+                          sizes="(min-width: 1024px) 380px, 32vw"
+                        />
+                      )}
                     </span>
                     <figcaption>
                       <span className="story-card-year">{item.year}</span>
