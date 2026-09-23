@@ -7,6 +7,20 @@ import { placeholderImage } from "@/lib/placeholder";
 import { storyItems, STORY_TRACK_W as TRACK_W, STORY_TRACK_H as TRACK_H } from "@/data/story";
 
 /**
+ * ⚠️ 임시 진단 플래그 (원인 분리 테스트용)
+ * iOS Safari에서 "문제가 반복적으로 발생했습니다" + WebContent 종료/재로딩이 발생하는 문제의
+ * 원인이 Story의 WebM 재생인지 확인하기 위해, video 렌더링만 잠시 끄고 대신 기존
+ * poster/placeholder 이미지를 보여준다.
+ *
+ * - data/story.ts의 video 경로(2022/2025/2026.webm) 데이터는 그대로 유지된다.
+ * - public/images/story/*.webm 파일도 그대로 유지된다.
+ * - 카드 위치/크기, 스크롤 매핑(updateStory)은 전혀 영향받지 않는다.
+ *
+ * 원인이 아닌 것으로 확인되면 이 값을 true로 되돌리면 즉시 이전 동작(video 재생)으로 복귀한다.
+ */
+const ENABLE_STORY_VIDEO = false;
+
+/**
  * OUR STORY — scroll-driven horizontal storytelling.
  * 원본 mockup의 sticky + horizontal-track + SVG path 합류 연출을 그대로 이식했다.
  * (좌표 시스템은 data/story.ts의 storyItems x/y, TRACK_W/TRACK_H와 1:1로 대응)
@@ -155,7 +169,7 @@ export default function Story() {
                     style={{ left: item.x }}
                   >
                     <span className="story-card-media">
-                      {isVideo ? (
+                      {isVideo && ENABLE_STORY_VIDEO ? (
                         <video
                           ref={(el) => {
                             videoRefs.current[i] = el;
@@ -170,6 +184,15 @@ export default function Story() {
                           <source src={item.image} type="video/webm" />
                           {item.videoMp4 && <source src={item.videoMp4} type="video/mp4" />}
                         </video>
+                      ) : isVideo ? (
+                        // 임시 진단: ENABLE_STORY_VIDEO=false인 동안 video 대신
+                        // 기존 poster/placeholder 이미지만 그대로 보여준다.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={fallbackSrc}
+                          alt={item.alt || item.title}
+                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                        />
                       ) : (
                         <FallbackImage
                           src={item.image}
