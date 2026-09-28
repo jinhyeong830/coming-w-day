@@ -102,6 +102,8 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
   font-family: var(--serif); font-style: italic; font-weight: 500;
   font-size: 1.15rem; letter-spacing: .02em;
 }
+.logo-mark { display: flex; align-items: center; line-height: 0; }
+.logo-mark img { height: 28px; width: 28px; object-fit: contain; }
 .menu-toggle { display: flex; align-items: center; gap: 12px; }
 .menu-toggle-text { font-size: .74rem; letter-spacing: .18em; text-transform: uppercase; }
 .menu-toggle-icon { width: 22px; height: 14px; position: relative; }
@@ -402,8 +404,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 .account { text-align: center; }
 .account-desc { margin-top: 14px; color: var(--gray); line-height: 1.8; }
 .account-list { margin-top: clamp(48px,7vh,64px); display: flex; flex-direction: column; }
-.account-entry { padding: clamp(28px,4vh,36px) 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.account-list .account-entry:last-child { border-bottom: 1px solid var(--line); }
+.account-entry { padding: clamp(32px,4.5vh,44px) 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .account-role { font-size: .78rem; letter-spacing: .12em; color: var(--accent); }
 .account-name { font-family: var(--serif); font-size: 1.3rem; margin-top: 6px; }
 .btn-copy {
@@ -415,7 +416,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 
 /* Account detail : 확인하기 클릭 시 부모님 계좌 + 본인 계좌가 함께 열린다 */
 .account-detail { width: 100%; max-height: 0; overflow: hidden; transition: max-height .45s var(--ease); }
-.account-row { padding: clamp(14px,2vh,18px) 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.account-row { padding: clamp(16px,2.4vh,22px) 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .account-row-label { font-size: .72rem; letter-spacing: .06em; color: var(--gray); }
 .account-row-bank { font-size: .92rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
 .account-row-copy { margin-top: 2px; }

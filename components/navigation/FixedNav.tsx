@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { lockBodyScroll, unlockBodyScroll } from "@/lib/scrollLock";
+import Image from "next/image";
+import { lockBodyScroll, unlockBodyScroll, scheduleUnlockScrollTo } from "@/lib/scrollLock";
 import { weddingInfo } from "@/data/wedding";
 
 const NAV_LINKS = [
@@ -80,6 +81,15 @@ export default function FixedNav() {
 
   const closeNav = () => setIsOpen(false);
 
+  function handleNavLinkClick(e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) {
+    e.preventDefault();
+    const target = document.getElementById(sectionId);
+    // 메뉴가 닫히며 scroll lock이 풀릴 때(useEffect의 unlockBodyScroll) 열기 직전 위치가 아니라
+    // 이 section으로 이동하도록 예약해둔다 — 그래야 잠금 해제 시의 위치 복원과 충돌하지 않는다.
+    if (target) scheduleUnlockScrollTo(target);
+    closeNav();
+  }
+
   return (
     <>
       <header
@@ -88,8 +98,8 @@ export default function FixedNav() {
         data-theme={theme}
       >
         <div className="header-inner">
-          <a href="#opening" className="logo">
-            S&amp;J
+          <a href="#opening" className="logo logo-mark" aria-label="처음으로 이동">
+            <Image src="/favicon.png" alt="S&J" width={28} height={28} priority />
           </a>
           <button
             className="menu-toggle"
@@ -123,7 +133,7 @@ export default function FixedNav() {
                   href={`#${link.section}`}
                   data-section={link.section}
                   className={activeSection === link.section ? "is-active" : undefined}
-                  onClick={closeNav}
+                  onClick={(e) => handleNavLinkClick(e, link.section)}
                 >
                   <span className="nav-index">{link.index}</span>
                   <span className="nav-label">{link.label}</span>

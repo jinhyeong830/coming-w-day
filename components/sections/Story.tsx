@@ -146,7 +146,7 @@ export default function Story() {
           one timeline.
         </Reveal>
         <Reveal as="p" className="story-hint">
-          Scroll to continue ↓
+          아래로 스크롤해주세요 ↓
         </Reveal>
       </div>
       <div className="story-pin-wrap" id="storyPinWrap" ref={pinWrapRef}>

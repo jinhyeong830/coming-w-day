@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { showToast } from "@/lib/toast";
 
 export default function KakaoFab() {
   const [visible, setVisible] = useState(false);
@@ -14,12 +13,16 @@ export default function KakaoFab() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <button
       className={`kakao-fab${visible ? " is-visible" : ""}`}
       type="button"
-      aria-label="카카오톡 공유"
-      onClick={() => showToast("카카오톡 공유는 실제 서비스 연동 시 제공됩니다.")}
+      aria-label="맨 위로 가기"
+      onClick={scrollToTop}
     >
       <svg
         viewBox="0 0 24 24"
@@ -30,7 +33,7 @@ export default function KakaoFab() {
         strokeLinejoin="round"
         aria-hidden="true"
       >
-        <path d="M4 12a8 5.6 0 1 1 6.6 9.4L4 22l1.4-3.8A5.6 5.6 0 0 1 4 12Z" />
+        <path d="M5 15l7-7 7 7" />
       </svg>
     </button>
   );

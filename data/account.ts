@@ -17,16 +17,18 @@ export const accountGroups: { groom: AccountGroup; bride: AccountGroup } = {
     role: "신랑",
     name: "박상우",
     accounts: [
-      { label: "신랑 박상우", bank: "하나은행", number: "123-456-789012" },
-      { label: "아버지 박○○", bank: "국민은행", number: "111-222-333444" },
+      { label: "신랑 박상우", bank: "국민은행", number: "090102-05-117297" },
+      { label: "아버지 박무식", bank: "우리은행", number: "1002-335-949907" },
+      { label: "어머니 박희경", bank: "농협은행", number: "100034-52-323419" },
     ],
   },
   bride: {
     role: "신부",
     name: "유진형",
     accounts: [
-      { label: "신부 유진형", bank: "국민은행", number: "123-456-789012" },
-      { label: "어머니 김○○", bank: "신한은행", number: "555-666-777888" },
+      { label: "신부 유진형", bank: "신한은행", number: "110-409-892526" },
+      { label: "아버지 유항선", bank: "신한은행", number: "110-034-100432" },
+      { label: "어머니 정경애", bank: "국민은행", number: "089502-04-074198" },
     ],
   },
 };

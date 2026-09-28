@@ -33,4 +33,4 @@ export const invitation: { groom: FamilyProfile; bride: FamilyProfile } = {
 };
 
 export const invitationQuote =
-  "서로 다른 계절을 지나온 두 사람이\n이제 같은 곳을 바라보며\n새로운 계절을 시작하려 합니다.";
+  "서로 다른 시간을 지나온 두 사람이\n같은 곳을 바라보며 이제\n서로의 평생이 되려고 합니다.";

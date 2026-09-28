@@ -31,15 +31,15 @@ export interface StoryItem {
 // OUR STORY: 각 이벤트는 미디어 1개(사진 또는 영상) + 연도 + 타이틀로 구성된다.
 // image 경로는 public/images/story/ 안의 실제 파일명과 정확히 일치한다.
 export const storyItems: StoryItem[] = [
-  { year: "1995", title: "진형의 어린 시절", alt: "진형의 어린 시절", image: "/images/story/1995.jpg", lane: "bride", x: 380, y: 80 },
+  { year: "1995", title: "진형이의 어린 시절", alt: "진형의 어린 시절", image: "/images/story/1995.jpg", lane: "bride", x: 380, y: 80 },
   { year: "1996", title: "상우의 어린 시절", alt: "상우의 어린 시절", image: "/images/story/1996.jpg", lane: "groom", x: 760, y: 320 },
-  { year: "2020", title: "우리가 처음 만난 날", alt: "우리가 처음 만난 날", image: "/images/story/2020.webp", lane: "merge", x: 1560, y: 200, big: true },
-  { year: "2021", title: "함께한 첫 계절", alt: "함께한 첫 계절", image: "/images/story/2021.webp", lane: "merged", x: 1960, y: 200 },
-  { year: "2022", title: "함께 걸어온 시간", alt: "함께 걸어온 시간", image: "/images/story/2022.webm", lane: "merged", x: 2360, y: 200 },
-  { year: "2023", title: "변함없는 마음", alt: "변함없는 마음", image: "/images/story/2023.webp", lane: "merged", x: 2760, y: 200 },
-  { year: "2024", title: "더 단단해진 우리", alt: "더 단단해진 우리", image: "/images/story/2024.webp", lane: "merged", x: 3160, y: 200 },
-  { year: "2025", title: "청혼, 그리고 약속", alt: "청혼, 그리고 약속", image: "/images/story/2025.webm", lane: "merged", x: 3560, y: 200 },
-  { year: "2026", title: "우리의 결혼식", alt: "우리의 결혼식", image: "/images/story/2026.webm", lane: "merged", x: 3980, y: 200, big: true },
+  { year: "2020", title: "조금은 어색했던 겨울을 지나,", alt: "2020년 겨울", image: "/images/story/2020.webp", lane: "merge", x: 1560, y: 200, big: true },
+  { year: "2021", title: "모든 계절을 함께하고,", alt: "2021년 단발", image: "/images/story/2021.webp", lane: "merged", x: 1960, y: 200 },
+  { year: "2022", title: "함께 비행기도 타보고,", alt: "함께 걸어온 시간", image: "/images/story/2022.webp", lane: "merged", x: 2360, y: 200 },
+  { year: "2023", title: "가끔 투닥거리기도 했지만", alt: "변함없는 마음", image: "/images/story/2023.webp", lane: "merged", x: 2760, y: 200 },
+  { year: "2024", title: "점점 더 단단해진 우리", alt: "더 단단해진 우리", image: "/images/story/2024.webp", lane: "merged", x: 3160, y: 200 },
+  { year: "2025", title: "결혼을 약속하고", alt: "결혼을 약속하고", image: "/images/story/2025.webm", lane: "merged", x: 3560, y: 200 },
+  { year: "2026", title: "올해, 결혼을 합니다.", alt: "우리의 결혼식", image: "/images/story/2026.webm", lane: "merged", x: 3980, y: 200, big: true },
 ];
 
 // scroll-driven 타임라인 트랙의 전체 좌표계 크기(px). storyItems의 x/y와 짝을 이룬다.
