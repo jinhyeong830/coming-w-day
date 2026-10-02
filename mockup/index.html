@@ -856,7 +856,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
         </div>
         <div class="field">
           <label for="gbMsg">메시지</label>
-          <textarea id="gbMsg" required maxlength="120" rows="3" placeholder="축하 메시지를 남겨주세요"></textarea>
+          <textarea id="gbMsg" required maxlength="1000" rows="3" placeholder="축하 메시지를 남겨주세요"></textarea>
         </div>
         <div class="field">
           <label for="gbPassword">비밀번호</label>
@@ -1471,7 +1471,7 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
       '</div>' +
       '<div class="gb-edit" hidden>' +
         '<div class="field"><label>이름</label><input class="gb-edit-name" maxlength="12" value="' + escapeHtml(m.name) + '"></div>' +
-        '<div class="field"><label>메시지</label><textarea class="gb-edit-msg" maxlength="120" rows="3">' + escapeHtml(m.msg) + '</textarea></div>' +
+        '<div class="field"><label>메시지</label><textarea class="gb-edit-msg" maxlength="1000" rows="3">' + escapeHtml(m.msg) + '</textarea></div>' +
         '<div class="gb-edit-actions">' +
           '<button type="button" class="btn btn-primary gb-edit-save">저장</button>' +
           '<button type="button" class="text-link gb-edit-cancel">취소</button>' +

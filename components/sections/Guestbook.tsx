@@ -227,7 +227,7 @@ export default function Guestbook() {
             <textarea
               id="gbMsg"
               required
-              maxLength={120}
+              maxLength={1000}
               rows={3}
               placeholder="축하 메시지를 남겨주세요"
               ref={msgRef}
@@ -334,7 +334,7 @@ export default function Guestbook() {
                       <label>메시지</label>
                       <textarea
                         className="gb-edit-msg"
-                        maxLength={120}
+                        maxLength={1000}
                         rows={3}
                         value={editMsg}
                         onChange={(e) => setEditMsg(e.target.value)}
