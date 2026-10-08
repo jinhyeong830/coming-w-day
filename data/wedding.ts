@@ -17,6 +17,13 @@ export const weddingInfo = {
   venueHall: "그랜드볼룸 홀",
 };
 
+// 공식 지도 서비스의 검색 공유 URL 형식 (API 키 불필요, 모바일에서 앱 설치 시 앱으로 연결되고
+// 미설치 시 웹 지도로 열린다. 좌표는 추측하지 않고 각 서비스가 장소명으로 직접 검색하도록 둔다).
+export const venueLinks = {
+  kakaoMapUrl: `https://map.kakao.com/link/search/${encodeURIComponent(weddingInfo.venueName)}`,
+  naverMapUrl: `https://map.naver.com/p/search/${encodeURIComponent(weddingInfo.venueName)}`,
+};
+
 export const venueInfo = {
   transit: `지하철 2호선/수인분당선
   · 선릉역 8번 출구 도보 10분\n

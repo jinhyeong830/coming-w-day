@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Reveal from "@/components/ui/Reveal";
 import { showToast } from "@/lib/toast";
-import { weddingInfo, venueInfo } from "@/data/wedding";
+import { weddingInfo, venueInfo, venueLinks } from "@/data/wedding";
+import KakaoMap from "@/components/kakao/KakaoMap";
 
 const ACCORDION_ITEMS = [
   { key: "transit", title: "대중교통", body: venueInfo.transit },
@@ -14,6 +15,11 @@ const ACCORDION_ITEMS = [
 export default function Venue() {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const panelRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "error">("loading");
+  const handleMapStatusChange = useCallback(
+    (status: "loading" | "ready" | "error") => setMapStatus(status),
+    []
+  );
 
   // 원본 mockup과 동일하게 max-height를 직접 읽어서(scrollHeight) 펼치고,
   // 닫을 때는 인라인 스타일을 제거해 CSS 기본값(0)으로 되돌린다.
@@ -86,11 +92,40 @@ export default function Venue() {
           </Reveal>
         </div>
 
-        <Reveal as="div" className="map-placeholder">
-          <div className="map-grid" aria-hidden="true"></div>
-          <p className="map-label">KAKAO MAP</p>
-          <p className="map-sub">{weddingInfo.venueName}</p>
-        </Reveal>
+        <div className="venue-map-col">
+          <Reveal
+            as="div"
+            className={`map-placeholder${mapStatus === "ready" ? " is-live" : ""}`}
+          >
+            <div className="map-grid" aria-hidden="true"></div>
+            <p className="map-label">KAKAO MAP</p>
+            <p className="map-sub">{weddingInfo.venueName}</p>
+            <KakaoMap
+              address={weddingInfo.venueAddress}
+              placeName={weddingInfo.venueName}
+              onStatusChange={handleMapStatusChange}
+            />
+          </Reveal>
+
+          <Reveal as="div" className="map-links">
+            <a
+              className="map-link-btn"
+              href={venueLinks.kakaoMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              카카오맵 ↗
+            </a>
+            <a
+              className="map-link-btn"
+              href={venueLinks.naverMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              네이버지도 ↗
+            </a>
+          </Reveal>
+        </div>
       </div>
     </section>
   );

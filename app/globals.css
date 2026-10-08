@@ -364,8 +364,21 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 }
 .map-label { position: absolute; left: 18px; top: 18px; font-size: .7rem; letter-spacing: .18em; color: var(--gray); }
 .map-sub { position: absolute; left: 18px; bottom: 18px; font-family: var(--serif); font-size: 1.1rem; }
+.kakao-map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map-placeholder.is-live .map-grid,
+.map-placeholder.is-live .map-label,
+.map-placeholder.is-live .map-sub { display: none; }
+.map-placeholder.is-live::after { display: none; }
 .venue-cta { margin-top: 24px; }
 .venue-cta .btn { width: 100%; }
+.map-links { margin-top: 16px; display: flex; gap: 10px; }
+.map-link-btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 14px 16px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  border: 1px solid var(--line); color: var(--ink-soft);
+  transition: border-color .3s, color .3s, background .3s;
+}
+.map-link-btn:hover { border-color: var(--ink); background: var(--ink); color: var(--ink-invert); }
 
 .accordion { margin-top: clamp(48px,7vh,64px); border-top: 1px solid var(--line); }
 .accordion-item { border-bottom: 1px solid var(--line); }
