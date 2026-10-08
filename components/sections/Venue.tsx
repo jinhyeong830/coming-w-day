@@ -37,17 +37,64 @@ export default function Venue() {
     ? `https://map.kakao.com/link/to/${encodeURIComponent(weddingInfo.venueName)},${venueCoords.lat},${venueCoords.lng}`
     : venueLinks.kakaoMapUrl;
 
-  const handleNaverMapClick = useCallback(
-    (event: React.MouseEvent<HTMLAnchorElement>) => {
-      // 좌표가 아직 없으면 href(장소명 검색 fallback 링크)의 기본 동작을 그대로 둔다.
+  // 현재 위치는 클릭 시점에 브라우저 Geolocation API로만 가져오고, 길찾기 URL을 만드는 데만 쓴다.
+  // 서버로 보내거나 state/DB에 저장하지 않는다. 권한 거부/실패/미지원 시 null.
+  function getCurrentPosition(): Promise<KakaoMapCoords | null> {
+    return new Promise((resolve) => {
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => resolve(null),
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+      );
+    });
+  }
+
+  const handleKakaoMapClick = useCallback(
+    async (event: React.MouseEvent<HTMLAnchorElement>) => {
+      // 목적지 좌표가 아직 없으면 href(장소명 검색 fallback 링크)의 기본 동작을 그대로 둔다.
       if (!venueCoords) return;
 
       event.preventDefault();
 
-      const appUrl = `nmap://navigation?dlat=${venueCoords.lat}&dlng=${venueCoords.lng}&dname=${encodeURIComponent(
-        weddingInfo.venueName
-      )}&appname=${encodeURIComponent(pageUrl || venueLinks.naverMapUrl)}`;
+      const destSegment = `${encodeURIComponent(weddingInfo.venueName)},${venueCoords.lat},${venueCoords.lng}`;
+      const current = await getCurrentPosition();
+
+      // 공식 길찾기 링크: 현재 위치를 얻었으면 출발지→목적지(/link/from/.../to/...),
+      // 아니면 목적지만 지정하는 /link/to/... (둘 다 Kakao Web API 가이드에 문서화된 형식).
+      const url = current
+        ? `https://map.kakao.com/link/from/${encodeURIComponent("현재 위치")},${current.lat},${current.lng}/to/${destSegment}`
+        : `https://map.kakao.com/link/to/${destSegment}`;
+
+      window.location.href = url;
+    },
+    [venueCoords]
+  );
+
+  const handleNaverMapClick = useCallback(
+    async (event: React.MouseEvent<HTMLAnchorElement>) => {
+      // 목적지 좌표가 아직 없으면 href(장소명 검색 fallback 링크)의 기본 동작을 그대로 둔다.
+      if (!venueCoords) return;
+
+      event.preventDefault();
+
       const fallbackUrl = venueLinks.naverMapUrl;
+      const current = await getCurrentPosition();
+
+      if (!current) {
+        // 위치 권한 거부/실패 → 목적지 중심 화면으로만 fallback (내비게이션 시작하지 않음).
+        window.location.href = fallbackUrl;
+        return;
+      }
+
+      // /route/car: 길찾기 "결과" 화면까지만 연다. /navigation(내비게이션 바로 시작)은 쓰지 않는다.
+      const appUrl =
+        `nmap://route/car?slat=${current.lat}&slng=${current.lng}&sname=${encodeURIComponent("현재 위치")}` +
+        `&dlat=${venueCoords.lat}&dlng=${venueCoords.lng}&dname=${encodeURIComponent(weddingInfo.venueName)}` +
+        `&appname=${encodeURIComponent(pageUrl || fallbackUrl)}`;
 
       // nmap:// 앱 scheme은 앱이 없으면 아무 반응도 없을 수 있어, 일정 시간 안에 화면을 벗어나지
       // 않으면(= 앱이 안 열렸으면) 기존 웹 fallback으로 이동시킨다.
@@ -153,7 +200,7 @@ export default function Venue() {
           </Reveal>
 
           <Reveal as="div" className="map-links">
-            <a className="map-link-btn" href={kakaoMapHref}>
+            <a className="map-link-btn" href={kakaoMapHref} onClick={handleKakaoMapClick}>
               카카오맵 ↗
             </a>
             <a
