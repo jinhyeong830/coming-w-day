@@ -449,7 +449,10 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 .gb-title { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .gb-name { font-family: var(--serif); font-size: 1.05rem; }
 .gb-date { font-size: .72rem; letter-spacing: .04em; color: var(--gray); font-variant-numeric: tabular-nums; flex-shrink: 0; }
-.gb-msg { margin-top: 6px; color: var(--ink-soft); font-size: .92rem; line-height: 1.7; }
+.gb-msg {
+  margin-top: 6px; color: var(--ink-soft); font-size: .92rem; line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word;
+}
 .gb-empty { text-align: center; color: var(--gray); font-size: .85rem; padding: 12px 0; }
 
 /* 방명록 수정/삭제 — 비밀번호 확인 후 진행 */
