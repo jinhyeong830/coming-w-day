@@ -34,13 +34,17 @@ function loadKakaoSdk(appKey: string): Promise<void> {
   return kakaoSdkPromise;
 }
 
+export type KakaoMapCoords = { lat: number; lng: number };
+
 type KakaoMapProps = {
   address: string;
   placeName: string;
   onStatusChange?: (status: "loading" | "ready" | "error") => void;
+  /** 지도 marker와 동일한 geocoding 결과 좌표를 상위 컴포넌트에도 전달한다 (길찾기 링크용, 좌표 재추측 방지). */
+  onCoordsReady?: (coords: KakaoMapCoords) => void;
 };
 
-export default function KakaoMap({ address, placeName, onStatusChange }: KakaoMapProps) {
+export default function KakaoMap({ address, placeName, onStatusChange, onCoordsReady }: KakaoMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
@@ -76,7 +80,9 @@ export default function KakaoMap({ address, placeName, onStatusChange }: KakaoMa
             return;
           }
 
-          const coords = new kakao.maps.LatLng(Number(result[0].y), Number(result[0].x));
+          const lat = Number(result[0].y);
+          const lng = Number(result[0].x);
+          const coords = new kakao.maps.LatLng(lat, lng);
           const map = new kakao.maps.Map(containerRef.current, {
             center: coords,
             level: 3,
@@ -89,6 +95,7 @@ export default function KakaoMap({ address, placeName, onStatusChange }: KakaoMa
           });
           kakao.maps.event.addListener(marker, "click", () => infowindow.open(map, marker));
 
+          onCoordsReady?.({ lat, lng });
           setStatus("ready");
         });
       })
@@ -100,7 +107,7 @@ export default function KakaoMap({ address, placeName, onStatusChange }: KakaoMa
     return () => {
       cancelled = true;
     };
-  }, [address, placeName]);
+  }, [address, placeName, onCoordsReady]);
 
   if (status === "error") return null;
 
