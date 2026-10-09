@@ -61,7 +61,7 @@ export default function PhotoShare() {
             →
           </span>
         </Reveal>
-        <Reveal
+        {/* <Reveal
           as="button"
           className="text-link"
           id="btnCopyLink"
@@ -72,7 +72,7 @@ export default function PhotoShare() {
           }}
         >
           링크 복사
-        </Reveal>
+        </Reveal> */}
       </div>
       <footer className="site-footer">
         <p className="footer-names">

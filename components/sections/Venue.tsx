@@ -49,7 +49,7 @@ export default function Venue() {
             {weddingInfo.venueAddress}
           </Reveal>
           <Reveal as="p" className="venue-hall">
-            {weddingInfo.venueHall}
+            <b className="font-semibold">{weddingInfo.venueHall}</b>
           </Reveal>
 
           {/* <Reveal as="div" className="venue-cta">

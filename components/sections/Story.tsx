@@ -21,14 +21,13 @@ import { storyItems, STORY_TRACK_W as TRACK_W, STORY_TRACK_H as TRACK_H } from "
 const ENABLE_STORY_VIDEO = false;
 
 /**
- * OUR STORY — scroll-driven horizontal storytelling.
- * 원본 mockup의 sticky + horizontal-track + SVG path 합류 연출을 그대로 이식했다.
+ * OUR STORY — swipe 가능한 가로 타임라인.
+ * 원본 mockup의 horizontal-track + SVG path 합류 연출을 유지하되, 세로 스크롤→translateX
+ * 매핑 대신 .story-scroller의 네이티브 가로 스크롤로 이동한다.
  * (좌표 시스템은 data/story.ts의 storyItems x/y, TRACK_W/TRACK_H와 1:1로 대응)
  */
 export default function Story() {
-  const pinWrapRef = useRef<HTMLDivElement>(null);
-  const pinRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const yearGhostRef = useRef<HTMLSpanElement>(null);
   const progressFillRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
@@ -45,30 +44,24 @@ export default function Story() {
   const pathMergedD = `M${mergeX},${mergeY} L${TRACK_W - 220},${mergeY}`;
 
   useEffect(() => {
-    const pinWrap = pinWrapRef.current;
-    const pin = pinRef.current;
-    const track = trackRef.current;
+    const scroller = scrollerRef.current;
     const yearGhost = yearGhostRef.current;
     const progressFill = progressFillRef.current;
-    if (!pinWrap || !pin || !track || !yearGhost || !progressFill) return;
+    if (!scroller || !yearGhost || !progressFill) return;
 
     let rafPending = false;
 
+    // 활성 연도·진행률은 타임라인 컨테이너의 실제 가로 스크롤 위치(scrollLeft) 기준으로 계산한다.
     function updateStory() {
       rafPending = false;
-      if (!pinWrap || !pin || !track || !yearGhost || !progressFill) return;
+      if (!scroller || !yearGhost || !progressFill) return;
 
-      const rect = pinWrap.getBoundingClientRect();
-      const total = pinWrap.offsetHeight - window.innerHeight;
-      let progress = total > 0 ? -rect.top / total : 0;
-      progress = Math.min(Math.max(progress, 0), 1);
+      const viewport = scroller.clientWidth;
+      const maxScroll = Math.max(scroller.scrollWidth - viewport, 0);
+      const scrollLeft = Math.min(Math.max(scroller.scrollLeft, 0), maxScroll);
+      const progress = maxScroll > 0 ? scrollLeft / maxScroll : 0;
 
-      const viewport = pin.clientWidth;
-      const maxTranslate = Math.max(TRACK_W - viewport, 0);
-      const translateX = progress * maxTranslate;
-      track.style.transform = `translateX(-${translateX}px)`;
-
-      const centerX = translateX + viewport / 2;
+      const centerX = scrollLeft + viewport / 2;
       let closestIndex = 0;
       let closestDist = Infinity;
       storyItems.forEach((item, i) => {
@@ -93,13 +86,59 @@ export default function Story() {
       }
     }
 
-    window.addEventListener("scroll", onScroll, { passive: true });
+    scroller.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", updateStory);
     updateStory();
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      scroller.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", updateStory);
+    };
+  }, []);
+
+  // 터치·트랙패드는 네이티브 가로 스크롤을 그대로 쓰고, 가로 스크롤 수단이 없는
+  // 데스크톱 마우스 사용자만 드래그로 scrollLeft를 움직일 수 있게 한다.
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    let dragging = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+
+    function onPointerDown(e: PointerEvent) {
+      if (e.pointerType !== "mouse" || e.button !== 0 || !scroller) return;
+      dragging = true;
+      startX = e.clientX;
+      startScrollLeft = scroller.scrollLeft;
+      scroller.classList.add("is-dragging");
+    }
+    function onPointerMove(e: PointerEvent) {
+      if (!dragging || !scroller) return;
+      e.preventDefault();
+      scroller.scrollLeft = startScrollLeft - (e.clientX - startX);
+    }
+    function onPointerUp() {
+      if (!dragging || !scroller) return;
+      dragging = false;
+      scroller.classList.remove("is-dragging");
+    }
+
+    function onDragStart(e: DragEvent) {
+      e.preventDefault();
+    }
+
+    scroller.addEventListener("pointerdown", onPointerDown);
+    scroller.addEventListener("dragstart", onDragStart);
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+    return () => {
+      scroller.removeEventListener("pointerdown", onPointerDown);
+      scroller.removeEventListener("dragstart", onDragStart);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
     };
   }, []);
 
@@ -107,8 +146,8 @@ export default function Story() {
   // 않는다. 실제로 화면에 보이는(=IntersectionObserver 기준 충분히 보이는) video만
   // play()하고, 벗어나면 pause()한다 — 스크롤 매핑(updateStory)과는 완전히 분리된 별도
   // 로직이라 기존 scroll interaction에는 영향을 주지 않는다.
-  // (가로 transform으로 카드가 이동해도 IntersectionObserver는 실제 렌더링된 위치 기준으로
-  //  교차를 판정하므로 올바르게 동작한다.)
+  // (IntersectionObserver는 .story-scroller의 overflow clipping까지 반영해 교차를 판정하므로
+  //  가로 스크롤로 화면 밖에 있는 카드는 보이지 않는 것으로 처리된다.)
   useEffect(() => {
     const videos = videoRefs.current.filter((v): v is HTMLVideoElement => v !== null);
     if (videos.length === 0) return;
@@ -146,92 +185,94 @@ export default function Story() {
           one timeline.
         </Reveal>
         <Reveal as="p" className="story-hint">
-          아래로 스크롤해주세요 ↓
+          옆으로 넘겨주세요 →
         </Reveal>
       </div>
-      <div className="story-pin-wrap" id="storyPinWrap" ref={pinWrapRef}>
-        <div className="story-pin" ref={pinRef}>
+      <div className="story-pin-wrap" id="storyPinWrap">
+        <div className="story-pin">
           <span className="story-year-ghost" id="storyYearGhost" ref={yearGhostRef}>
             {storyItems[0].year}
           </span>
-          <div className="story-track" id="storyTrack" ref={trackRef} style={{ width: TRACK_W }}>
-            <div className="story-cards" id="storyCards">
-              {storyItems.map((item, i) => {
-                const fallbackSrc = placeholderImage(i, item.year);
-                const isVideo = item.image.toLowerCase().endsWith(".webm");
-                return (
-                  <figure
+          <div className="story-scroller" ref={scrollerRef} role="region" tabIndex={0} aria-label="연도별 타임라인 (좌우로 넘겨보세요)">
+            <div className="story-track" id="storyTrack" style={{ width: TRACK_W }}>
+              <div className="story-cards" id="storyCards">
+                {storyItems.map((item, i) => {
+                  const fallbackSrc = placeholderImage(i, item.year);
+                  const isVideo = item.image.toLowerCase().endsWith(".webm");
+                  return (
+                    <figure
+                      key={item.year}
+                      ref={(el) => {
+                        cardRefs.current[i] = el;
+                      }}
+                      className={`story-card lane-${item.lane}${item.big ? " is-big" : ""}`}
+                      style={{ left: item.x }}
+                    >
+                      <span className="story-card-media">
+                        {isVideo && ENABLE_STORY_VIDEO ? (
+                          <video
+                            ref={(el) => {
+                              videoRefs.current[i] = el;
+                            }}
+                            muted
+                            loop
+                            playsInline
+                            preload="none"
+                            poster={fallbackSrc}
+                            aria-label={item.alt || item.title}
+                          >
+                            <source src={item.image} type="video/webm" />
+                            {item.videoMp4 && <source src={item.videoMp4} type="video/mp4" />}
+                          </video>
+                        ) : isVideo ? (
+                          // 임시 진단: ENABLE_STORY_VIDEO=false인 동안 video 대신
+                          // 기존 poster/placeholder 이미지만 그대로 보여준다.
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={fallbackSrc}
+                            alt={item.alt || item.title}
+                            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        ) : (
+                          <FallbackImage
+                            src={item.image}
+                            fallbackSrc={fallbackSrc}
+                            alt={item.alt || item.title}
+                            sizes="(min-width: 1024px) 380px, 32vw"
+                          />
+                        )}
+                      </span>
+                      <figcaption>
+                        <span className="story-card-year">{item.year}</span>
+                        <span className="story-card-title">{item.title}</span>
+                      </figcaption>
+                    </figure>
+                  );
+                })}
+              </div>
+              <div className="story-spine" id="storySpine">
+                <svg
+                  className="story-lines"
+                  id="storyLines"
+                  viewBox={`0 0 ${TRACK_W} ${TRACK_H}`}
+                  preserveAspectRatio="none"
+                  style={{ width: TRACK_W }}
+                >
+                  <path className="line-bride" d={pathBrideD} />
+                  <path className="line-groom" d={pathGroomD} />
+                  <path className="line-merged" d={pathMergedD} />
+                </svg>
+                {storyItems.map((item, i) => (
+                  <span
                     key={item.year}
                     ref={(el) => {
-                      cardRefs.current[i] = el;
+                      dotRefs.current[i] = el;
                     }}
-                    className={`story-card lane-${item.lane}${item.big ? " is-big" : ""}`}
-                    style={{ left: item.x }}
-                  >
-                    <span className="story-card-media">
-                      {isVideo && ENABLE_STORY_VIDEO ? (
-                        <video
-                          ref={(el) => {
-                            videoRefs.current[i] = el;
-                          }}
-                          muted
-                          loop
-                          playsInline
-                          preload="none"
-                          poster={fallbackSrc}
-                          aria-label={item.alt || item.title}
-                        >
-                          <source src={item.image} type="video/webm" />
-                          {item.videoMp4 && <source src={item.videoMp4} type="video/mp4" />}
-                        </video>
-                      ) : isVideo ? (
-                        // 임시 진단: ENABLE_STORY_VIDEO=false인 동안 video 대신
-                        // 기존 poster/placeholder 이미지만 그대로 보여준다.
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={fallbackSrc}
-                          alt={item.alt || item.title}
-                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                      ) : (
-                        <FallbackImage
-                          src={item.image}
-                          fallbackSrc={fallbackSrc}
-                          alt={item.alt || item.title}
-                          sizes="(min-width: 1024px) 380px, 32vw"
-                        />
-                      )}
-                    </span>
-                    <figcaption>
-                      <span className="story-card-year">{item.year}</span>
-                      <span className="story-card-title">{item.title}</span>
-                    </figcaption>
-                  </figure>
-                );
-              })}
-            </div>
-            <div className="story-spine" id="storySpine">
-              <svg
-                className="story-lines"
-                id="storyLines"
-                viewBox={`0 0 ${TRACK_W} ${TRACK_H}`}
-                preserveAspectRatio="none"
-                style={{ width: TRACK_W }}
-              >
-                <path className="line-bride" d={pathBrideD} />
-                <path className="line-groom" d={pathGroomD} />
-                <path className="line-merged" d={pathMergedD} />
-              </svg>
-              {storyItems.map((item, i) => (
-                <span
-                  key={item.year}
-                  ref={(el) => {
-                    dotRefs.current[i] = el;
-                  }}
-                  className={`spine-dot lane-${item.lane}`}
-                  style={{ left: item.x, top: `${(item.y / TRACK_H) * 100}%` }}
-                />
-              ))}
+                    className={`spine-dot lane-${item.lane}`}
+                    style={{ left: item.x, top: `${(item.y / TRACK_H) * 100}%` }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
           <div className="story-progress">

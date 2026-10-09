@@ -86,7 +86,14 @@ export default function KakaoMap({ address, placeName, onStatusChange, onCoordsR
           const map = new kakao.maps.Map(containerRef.current, {
             center: coords,
             level: 3,
+            draggable: false,
+            scrollwheel: false,
+            disableDoubleClickZoom: true,
+            keyboardShortcuts: false,
           });
+          // 지도는 위치 확인용 정적 이미지처럼 고정한다 (확대/축소·핀치 줌·이동 모두 차단).
+          map.setZoomable(false);
+          map.setDraggable(false);
 
           const marker = new kakao.maps.Marker({ position: coords, map });
 

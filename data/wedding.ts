@@ -13,7 +13,7 @@ export const weddingInfo = {
   dowLabel: "SUN",
   timeLabel: "1:40 PM",
   venueName: "상록아트홀",
-  venueAddress: "서울특별시 강남구 언주로 508 상록회관 지하 1층",
+  venueAddress: "서울특별시 강남구 언주로 508 상록회관 L층(지하 1층)",
   venueHall: "그랜드볼룸 홀",
 };
 

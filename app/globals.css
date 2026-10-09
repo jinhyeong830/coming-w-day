@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: 'GeuriunYeeun';
+    src: url('https://cdn.jsdelivr.net/gh/Project-Noonnu/2609271945@griun-yeeun-rg/griun-yeeun-rg/Griun_Yeeun-Rg.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
 /* ============================================================
    아래는 mockup/index.html의 <style> 블록을 그대로 옮긴 것이다.
    이번 마이그레이션에서는 디자인을 Tailwind 유틸리티로 재해석하지 않고
@@ -31,6 +37,7 @@ html {
   --accent-soft: rgba(168,70,46,0.10);
   --serif: 'Fraunces', 'Pretendard Variable', Pretendard, serif;
   --sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --cute:'GeuriunYeeun', 'Pretendard Variable', Pretendard, serif;
   --header-h: 68px;
   --ease: cubic-bezier(.16,.84,.44,1);
 }
@@ -215,17 +222,33 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 @keyframes scrollcue { 0% { top: -100%; } 60% { top: 100%; } 100% { top: 100%; } }
 
 /* ============================================================
-   OUR STORY (scroll-driven horizontal timeline)
+   OUR STORY (swipeable horizontal timeline)
    ============================================================ */
 .story { background: var(--bg-dark); color: var(--ink-invert); padding-top: clamp(90px, 14vh, 140px); }
 .story-intro { padding: 0 clamp(20px, 5vw, 56px); max-width: 760px; }
 .story-intro h2 { font-size: clamp(2.1rem, 6vw, 3.6rem); line-height: 1.08; }
 .story-hint { margin-top: 22px; font-size: .78rem; letter-spacing: .1em; color: var(--gray-invert); }
 
-.story-pin-wrap { position: relative; height: 420vh; }
-.story-pin { position: sticky; top: 0; height: 100svh; overflow: hidden; display: flex; align-items: center; }
+.story-pin-wrap { position: relative; }
+.story-pin { position: relative; height: 100svh; overflow: hidden; display: flex; align-items: center; }
+/* 네이티브 가로 스크롤 컨테이너. 세로 제스처는 overflow-y: hidden + touch-action 기본값으로
+   그대로 페이지 스크롤로 넘어가고, overscroll-behavior-x는 가장자리에서 브라우저 뒤로가기 스와이프를 막는다. */
+.story-scroller {
+  position: relative; z-index: 1; width: 100%;
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none;
+  cursor: grab;
+}
+.story-scroller::-webkit-scrollbar { display: none; }
+.story-scroller.is-dragging { cursor: grabbing; user-select: none; }
+.story-scroller:focus { outline: none; }
+.story-scroller:focus-visible { outline: 1px solid var(--line-invert); outline-offset: -1px; }
+.story-scroller img { -webkit-user-drag: none; user-select: none; }
 .story-track {
-  position: relative; will-change: transform;
+  position: relative;
   display: flex; flex-direction: column; justify-content: center;
   gap: clamp(20px, 4vh, 36px);
 }
@@ -270,13 +293,6 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 500; letter-spacing: -0.01e
 .story-progress { position: absolute; left: 0; bottom: 6%; width: 100%; padding: 0 clamp(20px,5vw,56px); z-index: 2; }
 .story-progress-track { height: 1px; background: var(--line-invert); position: relative; }
 .story-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--ink-invert); width: 0%; }
-
-/* 모바일 QA: 가로 타임라인 이동이 너무 빠르게 느껴져 스크롤 거리를 늘려 페이싱을 여유롭게 조정.
-   .story-track의 translateX는 pinWrap.offsetHeight를 런타임에 읽어 계산하므로(Story.tsx)
-   이 높이 값만 바꿔도 JS 수정 없이 그대로 반영된다. desktop(768px 이상)은 기존 420vh 그대로 유지. */
-@media (max-width: 767px) {
-  .story-pin-wrap { height: 560vh; }
-}
 
 /* ============================================================
    GENERIC LIGHT SECTION LAYOUT
