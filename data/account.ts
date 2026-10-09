@@ -17,7 +17,7 @@ export const accountGroups: { groom: AccountGroup; bride: AccountGroup } = {
     role: "신랑",
     name: "박상우",
     accounts: [
-      { label: "신랑 박상우", bank: "국민은행", number: "090102-05-117297" },
+      { label: "신랑 박상우", bank: "국민은행", number: "090102-04-117297" },
       { label: "아버지 박무식", bank: "우리은행", number: "1002-335-949907" },
       { label: "어머니 박희경", bank: "농협은행", number: "100034-52-323419" },
     ],
