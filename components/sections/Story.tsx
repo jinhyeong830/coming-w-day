@@ -16,9 +16,11 @@ import { storyItems, STORY_TRACK_W as TRACK_W, STORY_TRACK_H as TRACK_H } from "
  * - public/images/story/*.webm 파일도 그대로 유지된다.
  * - 카드 위치/크기, 스크롤 매핑(updateStory)은 전혀 영향받지 않는다.
  *
- * 원인이 아닌 것으로 확인되면 이 값을 true로 되돌리면 즉시 이전 동작(video 재생)으로 복귀한다.
+ * 원인이 아닌 것으로 확인되면 ENABLE_STORY_VIDEO를 true로 되돌리면 즉시 이전 동작(video 재생)으로 복귀한다.
+ * STORY_VIDEO_YEARS에 포함된 연도는 ENABLE_STORY_VIDEO와 무관하게 video를 재생한다.
  */
 const ENABLE_STORY_VIDEO = false;
+const STORY_VIDEO_YEARS = new Set(["2026"]);
 
 /**
  * OUR STORY — swipe 가능한 가로 타임라인.
@@ -198,7 +200,9 @@ export default function Story() {
               <div className="story-cards" id="storyCards">
                 {storyItems.map((item, i) => {
                   const fallbackSrc = placeholderImage(i, item.year);
-                  const isVideo = item.image.toLowerCase().endsWith(".webm");
+                  const isMp4 = item.image.toLowerCase().endsWith(".mp4");
+                  const isVideo = isMp4 || item.image.toLowerCase().endsWith(".webm");
+                  const playVideo = ENABLE_STORY_VIDEO || STORY_VIDEO_YEARS.has(item.year);
                   return (
                     <figure
                       key={item.year}
@@ -209,7 +213,7 @@ export default function Story() {
                       style={{ left: item.x }}
                     >
                       <span className="story-card-media">
-                        {isVideo && ENABLE_STORY_VIDEO ? (
+                        {isVideo && playVideo ? (
                           <video
                             ref={(el) => {
                               videoRefs.current[i] = el;
@@ -221,11 +225,11 @@ export default function Story() {
                             poster={fallbackSrc}
                             aria-label={item.alt || item.title}
                           >
-                            <source src={item.image} type="video/webm" />
+                            <source src={item.image} type={isMp4 ? "video/mp4" : "video/webm"} />
                             {item.videoMp4 && <source src={item.videoMp4} type="video/mp4" />}
                           </video>
                         ) : isVideo ? (
-                          // 임시 진단: ENABLE_STORY_VIDEO=false인 동안 video 대신
+                          // 임시 진단: video가 꺼진 연도는 video 대신
                           // 기존 poster/placeholder 이미지만 그대로 보여준다.
                           // eslint-disable-next-line @next/next/no-img-element
                           <img

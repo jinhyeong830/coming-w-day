@@ -12,7 +12,10 @@ export interface GalleryImage {
 // 규칙에 맞는 파일만 넣으면 코드 수정 없이 바로 반영된다.
 
 
-export const galleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) => {
+// 사진이 아직 준비되지 않은 슬롯은 숨긴다. 18~30번 사진을 추가하면 이 값을 30으로 되돌린다.
+const GALLERY_VISIBLE_COUNT = 17;
+
+const allGalleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) => {
   const slotNumber = i + 1; // 1-indexed, public/images/gallery의 파일명과 대응
   const filename =`${String(slotNumber).padStart(2, "0")}.jpg`;
   return {
@@ -20,6 +23,8 @@ export const galleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) =
     alt: `웨딩 사진 ${String(slotNumber).padStart(2, "0")}`,
   };
 });
+
+export const galleryImages: GalleryImage[] = allGalleryImages.slice(0, GALLERY_VISIBLE_COUNT);
 
 export type GalleryItemType = "g-wide" | "g-portrait" | "g-small";
 
