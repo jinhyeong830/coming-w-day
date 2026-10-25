@@ -11,6 +11,10 @@ interface FallbackImageProps {
   sizes: string;
   className?: string;
   priority?: boolean;
+  /** next/image 재인코딩 품질(1~100). 기본값 75는 이미 압축된 JPG를 한 번 더 뭉개므로 85로 올려둔다. */
+  quality?: number;
+  /** true면 next/image 변환 없이 원본 파일을 그대로 내보낸다(원본 화질을 그대로 보여야 하는 갤러리용). */
+  unoptimized?: boolean;
 }
 
 const objectCoverStyle: CSSProperties = { objectFit: "cover" };
@@ -33,7 +37,7 @@ const fallbackStyle: CSSProperties = {
  *
  * 부모 요소는 position이 relative/absolute여야 한다(next/image의 fill 모드 요구사항).
  */
-export default function FallbackImage({ src, fallbackSrc, alt, sizes, className, priority }: FallbackImageProps) {
+export default function FallbackImage({ src, fallbackSrc, alt, sizes, className, priority, quality = 85, unoptimized }: FallbackImageProps) {
   const [failed, setFailed] = useState(false);
   // src가 바뀌면(예: 라이트박스 prev/next) 이전 이미지의 실패 상태를 들고 있지 않도록 리셋한다.
   // (렌더 중 state를 갱신하는 React 공식 패턴 — useEffect보다 한 프레임 빠르게 반영된다)
@@ -57,6 +61,8 @@ export default function FallbackImage({ src, fallbackSrc, alt, sizes, className,
       className={className}
       style={objectCoverStyle}
       priority={priority}
+      quality={quality}
+      unoptimized={unoptimized}
       onError={() => setFailed(true)}
     />
   );

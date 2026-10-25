@@ -242,7 +242,8 @@ export default function Story() {
                             src={item.image}
                             fallbackSrc={fallbackSrc}
                             alt={item.alt || item.title}
-                            sizes="(min-width: 1024px) 380px, 32vw"
+                            // 카드 실제 폭: clamp(200px, 27vw, 320px), is-big은 clamp(230px, 32vw, 380px) — 큰 쪽 기준
+                            sizes="(min-width: 1188px) 380px, (min-width: 719px) 32vw, 230px"
                           />
                         )}
                       </span>

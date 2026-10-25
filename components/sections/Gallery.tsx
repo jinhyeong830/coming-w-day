@@ -67,6 +67,7 @@ export default function Gallery() {
                   fallbackSrc={galleryFallback(i)}
                   alt={img.alt}
                   sizes="(min-width: 1280px) 33vw, (min-width: 768px) 40vw, 90vw"
+                  unoptimized
                 />
               </span>
               <span className="g-cap">{String(i + 1).padStart(2, "0")}</span>
@@ -190,6 +191,7 @@ function GalleryLightbox({
               fallbackSrc={galleryFallback(index)}
               alt={img.alt}
               sizes="(min-width: 640px) 560px, 92vw"
+              unoptimized
             />
           </motion.div>
         </AnimatePresence>

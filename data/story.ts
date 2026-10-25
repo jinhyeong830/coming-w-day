@@ -38,7 +38,7 @@ export const storyItems: StoryItem[] = [
   { year: "2022", title: "함께 비행기도 타보고,", alt: "함께 걸어온 시간", image: "/images/story/2022.webp", lane: "merged", x: 2360, y: 200 },
   { year: "2023", title: "가끔 투닥거리기도 했지만", alt: "변함없는 마음", image: "/images/story/2023.webp", lane: "merged", x: 2760, y: 200 },
   { year: "2024", title: "점점 더 단단해진 우리", alt: "더 단단해진 우리", image: "/images/story/2024.webp", lane: "merged", x: 3160, y: 200 },
-  { year: "2025", title: "결혼을 약속하고", alt: "결혼을 약속하고", image: "/images/story/2025.webm", lane: "merged", x: 3560, y: 200 },
+  { year: "2025", title: "결혼을 약속하고", alt: "결혼을 약속하고", image: "/images/story/2025.webp", lane: "merged", x: 3560, y: 200 },
   { year: "2026", title: "올해, 결혼을 합니다.", alt: "우리의 결혼식", image: "/images/story/2026.mp4", lane: "merged", x: 3980, y: 200, big: true },
 ];
 
