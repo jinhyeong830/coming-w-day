@@ -34,8 +34,6 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Original video files — 웹사이트는 변환된 .webm만 사용한다. 원본은 Git에 올리지 않는다.
+# Original video files — 원본 .mov는 Git에 올리지 않는다. (.mp4는 Story에서 직접 사용하므로 추적한다)
 public/images/story/*.MOV
 public/images/story/*.mov
-public/images/story/*.MP4
-public/images/story/*.mp4
