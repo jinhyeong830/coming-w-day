@@ -12,8 +12,8 @@ export interface GalleryImage {
 // 규칙에 맞는 파일만 넣으면 코드 수정 없이 바로 반영된다.
 
 
-// 사진이 아직 준비되지 않은 슬롯은 숨긴다. 18~30번 사진을 추가하면 이 값을 30으로 되돌린다.
-const GALLERY_VISIBLE_COUNT = 17;
+// 사진이 아직 준비되지 않은 슬롯은 숨긴다. 현재 01~30번 사진이 모두 준비되어 있다.
+const GALLERY_VISIBLE_COUNT = 30;
 
 const allGalleryImages: GalleryImage[] = Array.from({ length: 30 }, (_, i) => {
   const slotNumber = i + 1; // 1-indexed, public/images/gallery의 파일명과 대응
